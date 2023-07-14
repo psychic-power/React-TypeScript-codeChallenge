@@ -3,6 +3,7 @@ import { debounce } from "lodash";
 import axios from "axios";
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
+import LoadingOverlay from "react-loading-overlay-ts";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -74,6 +75,7 @@ function App() {
 
   const getBookList = (name: string) => {
     setLoading(true);
+    setSortBookList([])
     axios
       .get(`https://openlibrary.org/search.json?q=${name}`)
       .then((res) => {
@@ -98,7 +100,7 @@ function App() {
     }
   }, [bookList, selected]);
 
-  const debounceFn = useCallback(debounce(getBookList, 1000), []);
+  const debounceFn = useCallback(debounce(getBookList, 300), []);
 
   const handleNameChange = (e: any) => {
     setBookName(e.target.value);
@@ -107,7 +109,7 @@ function App() {
 
   return (
     <div className="container m-auto my-10">
-      <div>
+      <div className="mx-6">
         <label
           htmlFor="name"
           className="block text-sm font-medium leading-6 text-gray-900"
@@ -206,68 +208,74 @@ function App() {
           </Listbox>
         </div>
         <div className="mt-8 flow-root">
-          <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead>
-                  <tr>
-                    <th
-                      scope="col"
-                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                    >
-                      Book Title
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                    >
-                      Author Name
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                    >
-                      First Published
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                    >
-                      ISBN Number
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                    >
-                      Pages
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {!!sortBookList.length &&
-                    sortBookList.map((book) => (
-                      <tr key={book.key}>
-                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0 max-w-[300px] truncate">
-                          {book.title}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-[300px] truncate">
-                          {book.author_name}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {book.first_publish_year}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-[300px] truncate">
-                          {book.isbn}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {book.number_of_pages_median}
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
+          <LoadingOverlay
+            active={loading}
+            spinner
+            className="min-h-[500px] px-2"
+          >
+            <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <table className="min-w-full divide-y divide-gray-300">
+                  <thead>
+                    <tr>
+                      <th
+                        scope="col"
+                        className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+                      >
+                        Book Title
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      >
+                        Author Name
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      >
+                        First Published
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      >
+                        ISBN Number
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      >
+                        Pages
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {!!sortBookList.length &&
+                      sortBookList.map((book) => (
+                        <tr key={book.key}>
+                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0 max-w-[120px] xl:max-w-[300px] truncate">
+                            {book.title}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-[120px] xl:max-w-[300px] truncate">
+                            {book.author_name}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            {book.first_publish_year}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-[120px] xl:max-w-[300px] truncate">
+                            {book.isbn}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            {book.number_of_pages_median}
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          </LoadingOverlay>
         </div>
       </div>
     </div>
